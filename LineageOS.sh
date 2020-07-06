@@ -103,8 +103,8 @@ function verifydownloads
   # Verify the MD5 & SHA256 checksums.
   # NOTE: Some duplicated result as we have manually created a couple of the MD5 sums...
   echo "Checking MD5 and SHA256 checksums"
-  md5sum -c *.md5
-  shasum -c *.sha256
+  md5sum -c ./*.md5
+  shasum -c ./*.sha256
 }
 
 ################
