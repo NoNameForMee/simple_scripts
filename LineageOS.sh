@@ -3,7 +3,7 @@
 # Script to automatically download the latest relases for Samsung Galaxy S5 "klte"
 #  - Lineage OS ROM
 #  - TWRP <- if $DONATED_TO_TWRP=="true"
-#  - OpenGapps (Arm 9.0 nano) <- requires changing when LineageOS release new major versions.
+#  - OpenGapps (Arm 10.0 nano) <- requires changing when LineageOS release new major versions.
 #  - Weather provider
 # And the verify the files are correct using the provided signatures (certificates, SHA256 and MD5).
 # Author: NoNameForMee (github), 2017
@@ -13,7 +13,7 @@
 # SETUP
 function initalize
 {
-  DONATED_TO_TWRP="true" # Change to true if you have donated and this script will download latest TWRP as well.
+  DONATED_TO_TWRP="false" # Change to true if you have donated and this script will download latest TWRP as well.
   cd ~/new_LineageOS/
   # Verify required tools
   for iDEPEND in "wget" "keytool" "gpg" "md5sum" "shasum"
@@ -38,20 +38,26 @@ function lineageos
   echo "Checking certificate of $fileName"
   # ~/git_repos/update_verifier/ contains the git repo https://github.com/LineageOS/update_verifier
   python3 ~/git_repos/update_verifier/update_verifier.py ~/git_repos/update_verifier/lineageos_pubkey $fileName
+  fileLink=$(wget -qO- https://download.lineageos.org/klte | grep -m 1 "recovery-klte.img" | cut -d '"' -f 2)
+  fileName="${fileLink##*/}"
+  # Download zip, if it does not already exist in path
+  wget -q -nc $fileLink -O $fileName
+  # Get corresponding SHA256 file
+  wget -q -nc $fileLink?sha256 -O $fileName".sha256"
 }
 
 function opengapps
 {
   # GApps (use Github's API to determine latest release for the ARM build)
-  # then grep only version for 9.0 Nano.
+  # then grep only version for 10.0 Nano.
   # FIXME: This must be changed when LineageOS upgrade to new major version (change 7.1 to 8.1 etc)
   # tmp=$(wget -qO- https://api.github.com/repos/opengapps/arm/releases/latest | \
-  #  grep -o 'https\://github\.com/opengapps/arm/releases/download/[[:digit:]]\{8,\}/open_gapps-arm-9.0-nano-[[:digit:]]\{8,\}\.zi\(p\|p\.md5\)')
+  #  grep -o 'https\://github\.com/opengapps/arm/releases/download/[[:digit:]]\{8,\}/open_gapps-arm-10.0-nano-[[:digit:]]\{8,\}\.zi\(p\|p\.md5\)')
   # 2019/08/26 MOVE TO:  https://sourceforge.net/projects/opengapps/rss?path=/arm
   fileLink=$(wget -qO- "https://sourceforge.net/projects/opengapps/rss?path=/arm" | \
-    grep -o 'url="https\://sourceforge\.net/projects/opengapps/files/arm/[[:digit:]]\{8,\}/open_gapps-arm-9.0-nano-[[:digit:]]\{8,\}\.zip/download' | cut -c6- -)
+    grep -o 'url="https\://sourceforge\.net/projects/opengapps/files/arm/[[:digit:]]\{8,\}/open_gapps-arm-10.0-nano-[[:digit:]]\{8,\}\.zip/download' | cut -c6- -)
   # Get zip file
-  fileName=$(echo $fileLink | grep -o 'open_gapps-arm-9.0-nano-[[:digit:]]\{8,8\}.zip')
+  fileName=$(echo $fileLink | grep -o 'open_gapps-arm-10.0-nano-[[:digit:]]\{8,8\}.zip')
   wget -q -nc $fileLink -O $fileName
   # Append ".md5" to the end of the filename inside the fileLink
   fileLinkMD5=$(echo $fileLink | sed 's/\<zip\>/&.md5/')
