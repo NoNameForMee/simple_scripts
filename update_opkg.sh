@@ -13,6 +13,8 @@
 if grep -q "http:" /etc/opkg/distfeeds.conf;
 then
   echo "Repos was plain text http:// which is not optimal..."
+  echo "On fresh install we must first update it..."
+  opkg update
   # Add required packages to avoid errors such as:
   # "wget: SSL support not available, please install one of the 
   #  libustream-.*[ssl|tls] packages as well as the ca-bundle and
